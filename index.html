@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculator Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Calculator View -->
+        <div id="calculator" class="view active">
+            <div class="display">
+                <div id="prev-operation"></div>
+                <div id="current-value">0</div>
+            </div>
+            <div class="buttons">
+                <button class="btn gray" data-action="backspace" id="backspace-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                        <line x1="18" y1="9" x2="12" y2="15"></line>
+                        <line x1="12" y1="9" x2="18" y2="15"></line>
+                    </svg>
+                </button>
+                <button class="btn gray" data-action="clear">AC</button>
+                <button class="btn gray" data-action="percent">%</button>
+                <button class="btn blue" data-action="operator" data-value="/">÷</button>
+
+                <button class="btn dark-gray" data-value="7">7</button>
+                <button class="btn dark-gray" data-value="8">8</button>
+                <button class="btn dark-gray" data-value="9">9</button>
+                <button class="btn blue" data-action="operator" data-value="*">×</button>
+
+                <button class="btn dark-gray" data-value="4">4</button>
+                <button class="btn dark-gray" data-value="5">5</button>
+                <button class="btn dark-gray" data-value="6">6</button>
+                <button class="btn blue" data-action="operator" data-value="-">−</button>
+
+                <button class="btn dark-gray" data-value="1">1</button>
+                <button class="btn dark-gray" data-value="2">2</button>
+                <button class="btn dark-gray" data-value="3">3</button>
+                <button class="btn blue" data-action="operator" data-value="+">+</button>
+
+                <button class="btn dark-gray" data-action="toggle-sign">±</button>
+                <button class="btn dark-gray" data-value="0">0</button>
+                <button class="btn dark-gray" data-value=".">,</button>
+                <button class="btn blue" data-action="calculate">=</button>
+            </div>
+        </div>
+
+        <!-- Portal View (Hidden) -->
+        <div id="portal" class="view">
+            <div class="portal-header">
+                <button id="close-portal" class="close-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="breadcrumb" id="breadcrumb">
+                    <span data-folder="root">Portal</span>
+                </div>
+                <button id="lock-portal" class="lock-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="lock-icon"
+                        class="locked">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" id="lock-shackle"></path>
+                    </svg>
+                </button>
+                <label for="file-upload" class="upload-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </label>
+                <input type="file" id="file-upload" multiple hidden accept="image/*,video/*,audio/*">
+            </div>
+
+            <div id="portal-content" class="gallery">
+                <!-- Media items and folders will be injected here -->
+            </div>
+
+            <!-- YouTube Banner (Swipeable) -->
+            <div id="youtube-banner-container" class="swipe-container">
+                <div id="youtube-tab" class="swipe-tab"></div>
+                <div id="youtube-banner" class="banner portal-banner">
+                    <div class="banner-content">
+                        <svg viewBox="0 0 24 24" fill="#FF0000">
+                            <path
+                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                        </svg>
+                        <span>YouTube</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Context Menu -->
+        <div id="context-menu" class="context-menu-overlay">
+            <div class="context-menu">
+                <button id="ctx-delete">Удалить</button>
+                <button id="ctx-move">В папку</button>
+                <button id="ctx-create-folder">Создать папку</button>
+                <button id="ctx-cancel">Отмена</button>
+            </div>
+        </div>
+
+        <!-- Auth Overlay (Face ID / PIN) -->
+        <div id="auth-overlay" class="context-menu-overlay">
+            <div class="context-menu auth-card">
+                <div class="faceid-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path
+                            d="M8 3H7a4 4 0 0 0-4 4v1a1 1 0 0 0 2 0V7a2 2 0 0 1 2-2h1a1 1 0 0 0 0-2zM17 3h-1a1 1 0 0 0 0 2h1a2 2 0 0 1 2 2v1a1 1 0 0 0 2 0V7a4 4 0 0 0-4-4zM21 16a1 1 0 0 0-1 1v1a2 2 0 0 1-2 2h-1a1 1 0 0 0 0 2h1a4 4 0 0 0 4-4v-1a1 1 0 0 0-1-1zM5 16a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4h1a1 1 0 0 0 0-2H7a2 2 0 0 1-2-2v-1a1 1 0 0 0-1-1z">
+                        </path>
+                        <path d="M12 8v4M9 15a3 3 0 0 0 6 0"></path>
+                    </svg>
+                </div>
+                <h3>Вход в портал</h3>
+                <p id="auth-status">Требуется Face ID</p>
+                <div id="pin-input-container" style="display: none;">
+                    <input type="password" id="pin-input" placeholder="Введите пароль" maxlength="4"
+                        style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #444; background: #333; color: white; text-align: center; font-size: 20px;">
+                </div>
+                <button id="auth-retry" style="margin-top: 15px;">Попробовать снова</button>
+            </div>
+        </div>
+
+        <!-- Folder Picker Overlay -->
+        <div id="folder-picker" class="context-menu-overlay">
+            <div class="context-menu">
+                <h3>Выберите папку</h3>
+                <div id="folder-list"></div>
+                <button id="picker-cancel">Отмена</button>
+            </div>
+        </div>
+
+        <!-- YouTube Fullscreen View -->
+        <div id="youtube-fullscreen" class="view">
+            <button id="close-youtube" class="close-btn overlay">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <iframe id="youtube-frame" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
