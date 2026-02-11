@@ -3,9 +3,6 @@ const currentDisplay = document.getElementById('current-value');
 const prevDisplay = document.getElementById('prev-operation');
 const backspaceBtn = document.getElementById('backspace-btn');
 const acBtn = document.getElementById('ac-btn');
-const youtubeFullscreen = document.getElementById('youtube-fullscreen');
-const youtubeFrame = document.getElementById('youtube-frame');
-const closeYoutube = document.getElementById('close-youtube');
 const portalView = document.getElementById('portal');
 const closePortal = document.getElementById('close-portal');
 const fileUpload = document.getElementById('file-upload');
@@ -15,10 +12,6 @@ const contextMenu = document.getElementById('context-menu');
 const folderPicker = document.getElementById('folder-picker');
 const youtubeBannerContainer = document.getElementById('youtube-banner-container');
 const youtubeBanner = document.getElementById('youtube-banner');
-
-const tgwebView = document.getElementById('tgweb-view');
-const tgwebFrame = document.getElementById('tgweb-frame');
-const closeTgweb = document.getElementById('close-tgweb');
 
 // --- State ---
 let currentOperand = '0';
@@ -130,14 +123,17 @@ backspaceBtn.addEventListener('touchcancel', endPortalHold);
 
 closePortal.addEventListener('click', () => portalView.classList.remove('active'));
 
-// --- AC Long Press Shortcut ---
+// --- AC Long Press Shortcut (Telegram Web) ---
 function startAcHold() {
     acHoldTimer = setTimeout(() => {
         if (window.Telegram?.WebApp?.HapticFeedback) {
             window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
         }
-        tgwebView.classList.add('active');
-        tgwebFrame.src = "https://web.telegram.org";
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.openLink('https://web.telegram.org');
+        } else {
+            window.open('https://web.telegram.org', '_blank');
+        }
     }, 2000);
 }
 function endAcHold() { clearTimeout(acHoldTimer); }
@@ -150,11 +146,6 @@ if (acBtn) {
     acBtn.addEventListener('touchend', endAcHold);
     acBtn.addEventListener('touchcancel', endAcHold);
 }
-
-closeTgweb.addEventListener('click', () => {
-    tgwebView.classList.remove('active');
-    tgwebFrame.src = "";
-});
 
 // --- Media & Folder Logic ---
 function getDb() {
@@ -324,13 +315,11 @@ youtubeBanner.addEventListener('click', () => {
         youtubeBannerContainer.style.transform = 'translate(-50%, 0)';
         return;
     }
-    youtubeFullscreen.classList.add('active');
-    youtubeFrame.src = "https://www.youtube.com";
-});
-
-closeYoutube.addEventListener('click', () => {
-    youtubeFullscreen.classList.remove('active');
-    youtubeFrame.src = "";
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.openLink("https://www.youtube.com");
+    } else {
+        window.open("https://www.youtube.com", "_blank");
+    }
 });
 
 function playMedia(file) {
