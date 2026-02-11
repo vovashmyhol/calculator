@@ -108,6 +108,9 @@ function startPortalHold() {
     backspaceBtn.classList.add('holding');
     portalHoldTimer = setTimeout(() => {
         backspaceBtn.classList.remove('holding');
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
         portalView.classList.add('active');
         renderPortal();
     }, 2000);
@@ -115,27 +118,33 @@ function startPortalHold() {
 function endPortalHold() { backspaceBtn.classList.remove('holding'); clearTimeout(portalHoldTimer); }
 
 backspaceBtn.addEventListener('mousedown', startPortalHold);
-backspaceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPortalHold(); });
+backspaceBtn.addEventListener('touchstart', startPortalHold);
 backspaceBtn.addEventListener('mouseup', endPortalHold);
 backspaceBtn.addEventListener('mouseleave', endPortalHold);
 backspaceBtn.addEventListener('touchend', endPortalHold);
+backspaceBtn.addEventListener('touchcancel', endPortalHold);
 
 closePortal.addEventListener('click', () => portalView.classList.remove('active'));
 
 // --- AC Long Press Shortcut ---
 function startAcHold() {
     acHoldTimer = setTimeout(() => {
-        window.open('https://web.telegram.org', '_blank');
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.openLink('https://web.telegram.org');
+        } else {
+            window.open('https://web.telegram.org', '_blank');
+        }
     }, 2000);
 }
 function endAcHold() { clearTimeout(acHoldTimer); }
 
 if (acBtn) {
     acBtn.addEventListener('mousedown', startAcHold);
-    acBtn.addEventListener('touchstart', (e) => { startAcHold(); });
+    acBtn.addEventListener('touchstart', startAcHold);
     acBtn.addEventListener('mouseup', endAcHold);
     acBtn.addEventListener('mouseleave', endAcHold);
     acBtn.addEventListener('touchend', endAcHold);
+    acBtn.addEventListener('touchcancel', endAcHold);
 }
 
 // --- Media & Folder Logic ---
