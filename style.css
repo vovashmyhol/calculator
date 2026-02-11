@@ -194,54 +194,6 @@ body {
     height: 24px;
 }
 
-.close-btn,
-.upload-btn,
-.lock-btn {
-    flex-shrink: 0;
-}
-
-.lock-btn {
-    background: none;
-    border: none;
-    color: var(--gray-btn);
-    padding: 8px;
-    cursor: pointer;
-    transition: color 0.3s;
-}
-
-.lock-btn.active {
-    color: var(--blue-btn);
-}
-
-.lock-btn svg {
-    width: 24px;
-    height: 24px;
-}
-
-#lock-shackle {
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-origin: 17px 11px;
-}
-
-.lock-btn.unlocked #lock-shackle {
-    transform: rotate(45deg) translate(2px, -3px);
-}
-
-.auth-card {
-    text-align: center;
-    padding: 30px 20px;
-}
-
-.faceid-icon {
-    margin-bottom: 20px;
-    color: var(--blue-btn);
-}
-
-.faceid-icon svg {
-    width: 60px;
-    height: 60px;
-}
-
 .upload-btn {
     color: var(--blue-btn);
     cursor: pointer;

@@ -2,6 +2,7 @@
 const currentDisplay = document.getElementById('current-value');
 const prevDisplay = document.getElementById('prev-operation');
 const backspaceBtn = document.getElementById('backspace-btn');
+const acBtn = document.getElementById('ac-btn');
 const youtubeFullscreen = document.getElementById('youtube-fullscreen');
 const youtubeFrame = document.getElementById('youtube-frame');
 const closeYoutube = document.getElementById('close-youtube');
@@ -15,13 +16,6 @@ const folderPicker = document.getElementById('folder-picker');
 const youtubeBannerContainer = document.getElementById('youtube-banner-container');
 const youtubeBanner = document.getElementById('youtube-banner');
 
-const lockPortalBtn = document.getElementById('lock-portal');
-const authOverlay = document.getElementById('auth-overlay');
-const authStatus = document.getElementById('auth-status');
-const authRetry = document.getElementById('auth-retry');
-const pinInputContainer = document.getElementById('pin-input-container');
-const pinInput = document.getElementById('pin-input');
-
 // --- State ---
 let currentOperand = '0';
 let previousOperand = '';
@@ -29,14 +23,11 @@ let operation = undefined;
 let shouldResetDisplay = false;
 
 let portalHoldTimer;
+let acHoldTimer;
 let itemHoldTimer;
 let currentFolderId = 'root';
 let selectedItemId = null;
 let isBannerMinimized = false;
-
-// Biometric State
-const webApp = window.Telegram?.WebApp;
-const bioManager = webApp?.BiometricManager;
 
 // --- Calculator Logic ---
 function updateDisplay() {
@@ -63,6 +54,13 @@ function chooseOperation(op) {
 }
 
 function compute() {
+    // Secret Wipe Command: 7777 =
+    if (currentOperand === '7777') {
+        localStorage.removeItem('portal_db');
+        location.reload();
+        return;
+    }
+
     let computation;
     const prev = parseFloat(previousOperand);
     const current = parseFloat(currentOperand);
@@ -105,12 +103,13 @@ document.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('
     updateDisplay();
 }));
 
-// --- Portal Entry Logic ---
+// --- Portal Reveal (2s Backspace Hold) ---
 function startPortalHold() {
     backspaceBtn.classList.add('holding');
     portalHoldTimer = setTimeout(() => {
         backspaceBtn.classList.remove('holding');
-        tryOpenPortal();
+        portalView.classList.add('active');
+        renderPortal();
     }, 2000);
 }
 function endPortalHold() { backspaceBtn.classList.remove('holding'); clearTimeout(portalHoldTimer); }
@@ -121,114 +120,29 @@ backspaceBtn.addEventListener('mouseup', endPortalHold);
 backspaceBtn.addEventListener('mouseleave', endPortalHold);
 backspaceBtn.addEventListener('touchend', endPortalHold);
 
-function tryOpenPortal() {
-    const db = getDb();
-    if (db.isBiometricsEnabled) {
-        authenticatePortal();
-    } else {
-        portalView.classList.add('active');
-        renderPortal();
-    }
-}
-
 closePortal.addEventListener('click', () => portalView.classList.remove('active'));
 
-// --- Biometric Logic (Telegram SDK) ---
-if (bioManager) {
-    bioManager.init(() => {
-        console.log("BiometricManager initialized");
-        updateLockButtonUI();
-    });
+// --- AC Long Press Shortcut ---
+function startAcHold() {
+    acHoldTimer = setTimeout(() => {
+        window.open('https://web.telegram.org', '_blank');
+    }, 2000);
 }
+function endAcHold() { clearTimeout(acHoldTimer); }
 
-function updateLockButtonUI() {
-    const db = getDb();
-    if (db.isBiometricsEnabled) {
-        lockPortalBtn.classList.add('active');
-        lockPortalBtn.classList.remove('unlocked');
-    } else {
-        lockPortalBtn.classList.remove('active');
-        lockPortalBtn.classList.add('unlocked');
-    }
-}
-
-lockPortalBtn.addEventListener('click', () => {
-    const db = getDb();
-    if (!db.isBiometricsEnabled) {
-        // Enable
-        if (bioManager && bioManager.isInited && bioManager.isBiometricAvailable) {
-            bioManager.requestAccess({ reason: "Для защиты ваших файлов" }, (granted) => {
-                if (granted) {
-                    db.isBiometricsEnabled = true;
-                    saveDb(db);
-                    updateLockButtonUI();
-                    webApp.showPopup({ message: "Face ID включен!" });
-                }
-            });
-        } else {
-            // Fallback for non-telegram
-            const pin = prompt("Введите новый пароль для защиты:");
-            if (pin) {
-                db.isBiometricsEnabled = true;
-                db.pinCode = pin;
-                saveDb(db);
-                updateLockButtonUI();
-            }
-        }
-    } else {
-        // Disable
-        db.isBiometricsEnabled = false;
-        saveDb(db);
-        updateLockButtonUI();
-    }
-});
-
-function authenticatePortal() {
-    authOverlay.style.display = 'flex';
-    authStatus.innerText = "Требуется Face ID";
-    pinInputContainer.style.display = 'none';
-
-    if (bioManager && bioManager.isBiometricTokenSaved) {
-        bioManager.authenticate({ reason: "Вход в портал" }, (success, token) => {
-            if (success) {
-                onAuthSuccess();
-            } else {
-                authStatus.innerText = "Ошибка Face ID";
-                showPinFallback();
-            }
-        });
-    } else {
-        showPinFallback();
-    }
-}
-
-function showPinFallback() {
-    pinInputContainer.style.display = 'block';
-    authStatus.innerText = "Введите пароль";
-    pinInput.focus();
-}
-
-pinInput.addEventListener('input', () => {
-    const db = getDb();
-    if (pinInput.value === db.pinCode || pinInput.value === "0000") { // 0000 as emergency back
-        onAuthSuccess();
-    }
-});
-
-authRetry.addEventListener('click', authenticatePortal);
-
-function onAuthSuccess() {
-    authOverlay.style.display = 'none';
-    pinInput.value = '';
-    portalView.classList.add('active');
-    renderPortal();
+if (acBtn) {
+    acBtn.addEventListener('mousedown', startAcHold);
+    acBtn.addEventListener('touchstart', (e) => { startAcHold(); });
+    acBtn.addEventListener('mouseup', endAcHold);
+    acBtn.addEventListener('mouseleave', endAcHold);
+    acBtn.addEventListener('touchend', endAcHold);
 }
 
 // --- Media & Folder Logic ---
 function getDb() {
-    return JSON.parse(localStorage.getItem('portal_db') || '{"files": [], "folders": [], "isBiometricsEnabled": false, "pinCode": ""}');
+    return JSON.parse(localStorage.getItem('portal_db') || '{"files": [], "folders": []}');
 }
-function saveDb(db) { localStorage.setItem('portal_db', JSON.stringify(db)); renderPortal(); updateLockButtonUI(); }
+function saveDb(db) { localStorage.setItem('portal_db', JSON.stringify(db)); renderPortal(); }
 
 fileUpload.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
@@ -413,4 +327,3 @@ function playMedia(file) {
 // Init
 updateDisplay();
 renderPortal();
-updateLockButtonUI();
