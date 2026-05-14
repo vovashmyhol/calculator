@@ -1,123 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calculator Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Voco Sticker Shop</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-
 <body>
-    <div id="app">
-        <!-- Calculator View -->
-        <div id="calculator" class="view active">
-            <div class="display">
-                <div id="prev-operation"></div>
-                <div id="current-value">0</div>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-logo-wrap">
+            <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Splash.json" background="transparent" speed="1" loop autoplay></lottie-player>
+        </div>
+    </div>
+
+    <div id="app" class="is-loading">
+        <!-- Background Layers -->
+        <div class="main-background"></div>
+        <div class="creators-background"></div>
+
+        <!-- Scroll-triggered Blur Overlay -->
+        <div id="scrollOverlay" class="scroll-overlay"></div>
+
+        <!-- Scrolling Headroom Spacer -->
+        <div class="scroll-headroom"></div>
+
+        <!-- Tabs Container -->
+        <div id="tabsContainer" class="tabs-container">
+            <!-- Voco Tab (Current Content) -->
+            <div id="vocoTab" class="tab-pane active">
+                <!-- Header Content -->
+                <header class="main-header">
+                    <div class="brand-logo-wrap">
+                        <img src="voco_logo.jpg" alt="Voco Logo" class="brand-logo">
+                    </div>
+                    <div class="brand-info">
+                        <div class="brand-name">
+                            <h1>VOCO</h1>
+                            <img src="verify.WEBP" alt="Verified" class="verify-badge">
+                        </div>
+                        <a href="https://t.me/voco_in" class="channel-link" target="_blank">by <span>@voco_in</span></a>
+                    </div>
+                </header>
+
+                <!-- Collections Section -->
+                <section class="collections-section">
+                    <h2 class="section-title">Collections</h2>
+                    <div class="collections-carousel" id="collectionsCarousel">
+                        <div class="pack-card skeleton-placeholder skeleton"></div>
+                        <div class="pack-card skeleton-target" id="vocoPack">
+                            <div class="pack-supply-tag">333/333</div>
+                            <img src="пак.jpg" alt="Voco Pack" class="pack-image">
+                        </div>
+                    </div>
+                    <div class="carousel-dots">
+                        <span class="dot active"></span>
+                    </div>
+                </section>
             </div>
-            <div class="buttons">
-                <button class="btn gray" data-action="backspace" id="backspace-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                        <line x1="18" y1="9" x2="12" y2="15"></line>
-                        <line x1="12" y1="9" x2="18" y2="15"></line>
-                    </svg>
-                </button>
-                <button class="btn gray" data-action="clear" id="ac-btn">AC</button>
-                <button class="btn gray" data-action="percent">%</button>
-                <button class="btn blue" data-action="operator" data-value="/">÷</button>
 
-                <button class="btn dark-gray" data-value="7">7</button>
-                <button class="btn dark-gray" data-value="8">8</button>
-                <button class="btn dark-gray" data-value="9">9</button>
-                <button class="btn blue" data-action="operator" data-value="*">×</button>
+            <!-- Creators Tab -->
+            <div id="creatorsTab" class="tab-pane">
+                <div class="creators-header-spacer"></div>
 
-                <button class="btn dark-gray" data-value="4">4</button>
-                <button class="btn dark-gray" data-value="5">5</button>
-                <button class="btn dark-gray" data-value="6">6</button>
-                <button class="btn blue" data-action="operator" data-value="-">−</button>
+                <div class="creators-banner">
+                    <img src="Прмер.jpg" alt="Banner" class="banner-img"> <!-- Placeholder image -->
+                    <div class="banner-content">
+                        <h2>Top Creators</h2>
+                        <p>Explore packs from the best artists</p>
+                    </div>
+                </div>
 
-                <button class="btn dark-gray" data-value="1">1</button>
-                <button class="btn dark-gray" data-value="2">2</button>
-                <button class="btn dark-gray" data-value="3">3</button>
-                <button class="btn blue" data-action="operator" data-value="+">+</button>
-
-                <button class="btn dark-gray" data-action="toggle-sign">±</button>
-                <button class="btn dark-gray" data-value="0">0</button>
-                <button class="btn dark-gray" data-value=".">,</button>
-                <button class="btn blue" data-action="calculate">=</button>
+                <section class="creators-collections">
+                    <div class="collection-header">
+                        <img src="creators_packs.webp" alt="Creators Packs" class="section-icon">
+                        <h2 class="section-title">New Arrivals</h2>
+                    </div>
+                    <div class="creators-grid">
+                        <div class="creator-card" id="kittenPack">
+                            <img src="Kitten/CAACAgIAAxUAAWn8ngkaS9tMy3lKuzIr40hAyubNAAK8iQAChGexS4oMmkGTCWnzOwQ.webp" alt="Kitten Pack" class="creator-card-img">
+                            <div class="creator-card-info">
+                                <span class="creator-name">Kitten</span>
+                                <span class="creator-price">by <a href="https://t.me/vovnx" class="creator-link" target="_blank">@vovnx</a></span>
+                            </div>
+                        </div>
+                        <!-- 
+                        <div class="creator-card">
+                            <div class="creator-card-img skeleton"></div>
+                            <div class="creator-card-info">
+                                <span class="creator-name">Voco Edition</span>
+                                <span class="creator-price">by <a href="https://t.me/PolyaKorniyuk" class="creator-link" target="_blank">@PolyaKorniyuk</a></span>
+                            </div>
+                        </div>
+                         -->
+                    </div>
+                </section>
             </div>
         </div>
 
-        <!-- Portal View (Hidden) -->
-        <div id="portal" class="view">
-            <div class="portal-header">
-                <button id="close-portal" class="close-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-                <div class="breadcrumb" id="breadcrumb">
-                    <span data-folder="root">Portal</span>
+        <!-- 2-Tab Bottom Bar + Separate Profile Button -->
+        <div class="bottom-nav-container">
+            <nav class="bottom-nav-main">
+                <div id="navIndicator" class="nav-indicator"></div>
+                <div class="tab-item active" id="tabVoco" onclick="switchTab('voco')">
+                    <div class="tab-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9c.83 0 1.5-.67 1.5-1.5S7.83 8 7 8s-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm10 0c.83 0 1.5-.67 1.5-1.5S17.83 8 17 8s-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm-5 5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+                    </div>
+                    <span class="tab-label">VOCO</span>
+                </div>
+                <div class="tab-item" id="tabCreators" onclick="switchTab('creators')">
+                    <div class="tab-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg>
+                    </div>
+                    <span class="tab-label">Creators</span>
+                </div>
+            </nav>
+            
+            <!-- Separate Profile Button -->
+            <button class="profile-nav-circle" id="profileBtn" onclick="openProfile()">
+                <img id="navUserPhoto" src="voco_logo.jpg" alt="Profile" class="nav-avatar-large">
+            </button>
+        </div>
+
+
+        <!-- Profile View -->
+        <div id="profileView" class="profile-page">
+            <div class="profile-header-bg" id="profileHeaderBg"></div>
+            <div class="profile-stars-bg" id="profileStarsBg"></div>
+            <div class="profile-content">
+                <div class="profile-main-info">
+                    <div class="profile-avatar-container-large">
+                        <img src="Corone.PNG" alt="Crown" class="user-crown">
+                        <div class="profile-avatar-large">
+                            <img id="userPhotoLarge" src="voco_logo.jpg" alt="User Avatar">
+                        </div>
+                    </div>
+                    <h1 id="userName" class="user-name-title">User Name</h1>
+                    <div class="user-stats">
+                        <span class="stat-item"><span id="packCount">0</span> паков</span>
+                        <div class="user-id-container" id="copyId">
+                            <span id="userId" class="user-id-text">123456789</span>
+                            <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-collections-wrapper">
+                    <div class="profile-collections-selector" id="collectionsSelector">
+                        <div class="selector-content">
+                            <span class="selector-title">Collections</span>
+                        </div>
+                        <div class="selector-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                    </div>
+                    <div class="collections-dropdown" id="collectionsDropdown">
+                        <div class="dropdown-inner">
+                            <button class="filter-opt active" data-filter="all">
+                                <span>All Packs</span>
+                                <div class="opt-radio"></div>
+                            </button>
+                            <button class="filter-opt" data-filter="VocoX">
+                                <span>Vatman family</span>
+                                <div class="opt-radio"></div>
+                            </button>
+                            <button class="filter-opt" data-filter="Kitten">
+                                <span>Kitten Pack</span>
+                                <div class="opt-radio"></div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <label for="file-upload" class="upload-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                </label>
-                <input type="file" id="file-upload" multiple hidden accept="image/*,video/*,audio/*">
+                <div class="inventory-grid" id="inventoryGrid">
+                    <!-- Stickers will be injected here -->
+                </div>
             </div>
-
-            <div id="portal-content" class="gallery">
-                <!-- Media items and folders will be injected here -->
+        </div>
             </div>
+        </div>
 
-            <!-- YouTube Banner (Swipeable) -->
-            <div id="youtube-banner-container" class="swipe-container">
-                <div id="youtube-tab" class="swipe-tab"></div>
-                <div id="youtube-banner" class="banner portal-banner">
-                    <div class="banner-content">
-                        <svg viewBox="0 0 24 24" fill="#FF0000">
-                            <path
-                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                        </svg>
-                        <span>YouTube</span>
+        <!-- Detailed Pack Modal -->
+        <div id="packModal" class="modal-overlay">
+            <div class="modal-content">
+                <div id="modalBgOverlay" class="modal-bg-overlay"></div>
+                <div class="modal-handle"></div>
+                
+                <div class="modal-top-nav">
+                    <button class="modal-close-small" id="closeModal">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <div class="modal-header-centered">
+                        <div class="slider-dots-mini" id="modalDots">
+                            <span class="m-dot active"></span>
+                            <span class="m-dot"></span>
+                            <span class="m-dot"></span>
+                            <span class="m-dot"></span>
+                            <span class="m-dot"></span>
+                            <span class="m-dot"></span>
+                        </div>
+                    </div>
+                    <div class="nft-soon-badge">NFT soon</div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="pack-preview-area">
+                        <div class="lottie-slider" id="lottieSlider">
+                            <!-- Slides will be injected or kept as 6 placeholders -->
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Choco.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Pink.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Sad.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                            <div class="lottie-slide">
+                                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="pack-title-bold">Vatman family</h2>
+                    
+                    <div class="info-card" id="marketInfo">
+                        <div class="info-row">
+                            <span class="info-label">Supply</span>
+                            <span class="info-value" id="supplyValue">333 of 333</span>
+                        </div>
+                        <div class="info-divider"></div>
+                        <div class="info-row">
+                            <span class="info-label">Price</span>
+                            <div class="info-value price-stars">
+                                <span id="priceValue">15</span>
+                                <img src="stars-DBKMczxe.png" alt="Stars" class="star-icon-img">
+                            </div>
+                        </div>
+                        <div id="ownerRow" style="display: none;">
+                            <div class="info-divider"></div>
+                            <div class="info-row">
+                                <span class="info-label">Owner</span>
+                                <span class="info-value" id="ownerName">User Name</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <div id="extraActions" class="extra-actions" style="display: none;">
+                            <button class="modal-action-circle disabled" id="mintBtn">
+                                <img src="Mint.webp" alt="Mint">
+                            </button>
+                            <button class="modal-action-circle disabled" id="transferBtn">
+                                <img src="Transfer.webp" alt="Transfer">
+                            </button>
+                        </div>
+                        <button class="premium-action-button" id="buyBtn">Get</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Context Menu -->
-        <div id="context-menu" class="context-menu-overlay">
-            <div class="context-menu">
-                <button id="ctx-delete">Удалить</button>
-                <button id="ctx-move">В папку</button>
-                <button id="ctx-create-folder">Создать папку</button>
-                <button id="ctx-cancel">Отмена</button>
-            </div>
-        </div>
-
-
-
-        <!-- Folder Picker Overlay -->
-        <div id="folder-picker" class="context-menu-overlay">
-            <div class="context-menu">
-                <h3>Выберите папку</h3>
-                <div id="folder-list"></div>
-                <button id="picker-cancel">Отмена</button>
-            </div>
-        </div>
-
-
     </div>
-    <script src="script.js"></script>
-</body>
 
+    <!-- Success Modal -->
+    <div id="successModal" class="success-overlay" style="display: none;">
+        <div class="success-stars-bg"></div>
+        <div class="success-content">
+            <div class="sticker-reveal-wrap">
+                <div id="starExplosion" class="star-explosion"></div>
+                <div class="breathing-container">
+                    <img src="Sticker.PNG" alt="Success Sticker" class="reveal-sticker-base">
+                    <div class="reveal-lottie-overlay" id="successLottieContainer">
+                        <!-- First frame or Lottie will be injected here -->
+                    </div>
+                </div>
+            </div>
+            <h2 class="success-title">Pack added to profile!</h2>
+            <button class="success-ok-btn" id="successOkBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Crown Reward Modal -->
+    <div id="rewardModal" class="reward-overlay" style="display: none;">
+        <div class="reward-content">
+            <div class="modal-handle"></div>
+            <div class="reward-stars-bg"></div>
+            <div class="reward-main">
+                <div class="reward-avatar-wrap">
+                    <div id="rewardExplosion" class="star-explosion"></div>
+                    <img src="Corone.PNG" alt="Crown" class="reward-crown">
+                    <div class="reward-avatar">
+                        <img id="rewardUserPhoto" src="voco_logo.jpg" alt="User Avatar">
+                    </div>
+                </div>
+                <h2 class="reward-title">King of Voco!</h2>
+                <p class="reward-subtitle">You've collected 5 packs. The crown is yours!</p>
+                <button class="reward-ok-btn" id="rewardOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minting Overlay (Crafting Animation) -->
+    <div id="mintingOverlay" class="minting-overlay" style="display: none;">
+        <div class="crafting-nexus">
+            <div class="nexus-glow"></div>
+            <div class="nexus-particles"></div>
+            <div class="swirling-stickers" id="swirlingStickers">
+                <!-- Stickers will be injected here during animation -->
+            </div>
+            <div class="nexus-core">
+                <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Splash.json" background="transparent" speed="2" loop autoplay></lottie-player>
+            </div>
+        </div>
+        <h2 class="crafting-text">Crafting Uniqueness...</h2>
+    </div>
+
+    <!-- Mint Result Modal -->
+    <div id="mintResultModal" class="mint-result-overlay" style="display: none;">
+        <div class="result-confetti" id="resultConfetti"></div>
+        <div class="result-content">
+            <div class="minted-card-wrap">
+                <div id="mintedCard" class="minted-card">
+                    <div class="card-number" id="cardSerialNumber">#4421</div>
+                    <div class="card-sticker-container" id="cardStickerContainer">
+                        <!-- Result sticker here -->
+                    </div>
+                    <div class="card-shine"></div>
+                </div>
+            </div>
+            <h2 class="result-title">New Item Created!</h2>
+            <p class="result-subtitle">This sticker is now unique and belongs to you.</p>
+            <button class="result-close-btn" id="mintResultCloseBtn">Awesome!</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
