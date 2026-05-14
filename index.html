@@ -314,6 +314,43 @@
         </div>
     </div>
 
+    <!-- Minting Confirmation Modal -->
+    <div id="mintConfirmModal" class="modal-overlay full-screen" style="display: none;">
+        <div class="mint-confirm-content">
+            <!-- Space Background -->
+            <div class="reward-stars-bg"></div>
+            
+            <!-- Showcase of potential results -->
+            <div class="mint-showcase" id="mintShowcase">
+                <!-- Flying cards will be injected here -->
+            </div>
+
+            <button class="modal-close-small" id="closeMintConfirm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <div class="mint-confirm-body">
+                <div class="mint-preview-card grad-10">
+                    <div class="preview-sticker">
+                        <lottie-player src="https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                    </div>
+                    <div class="preview-badge">Epic #007</div>
+                </div>
+
+                <h2 class="mint-confirm-title">Craft Unique Sticker</h2>
+                <p class="mint-confirm-text">
+                    This action will consume your <b>Vatman family</b> pack to create <b>one unique sticker</b> with a random rarity, background, and serial number.
+                </p>
+
+                <div class="btn-wrap">
+                    <div id="btnStarsContainer" class="star-explosion btn-stars-pos"></div>
+                    <button class="main-action-btn mint-start-btn" id="confirmMintStart">Start Crafting</button>
+                </div>
+                <button class="secondary-btn" id="cancelMint">Maybe later</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Minting Overlay (Crafting Animation) -->
     <div id="mintingOverlay" class="minting-overlay" style="display: none;">
         <div class="crafting-nexus">

@@ -438,6 +438,15 @@ function renderInventory() {
     grid.innerHTML = '';
     packCount.textContent = inventory.length;
 
+    const getRarity = (gradClass) => {
+        if (!gradClass) return 'Common';
+        const num = parseInt(gradClass.replace('grad-', ''));
+        if (gradClass === 'grad-14' || gradClass === 'grad-15') return 'Legendary';
+        if (num >= 12) return 'Epic';
+        if (num >= 8) return 'Rare';
+        return 'Common';
+    };
+
     // Show crown if 5 or more packs
     const profileCrown = document.querySelector('.user-crown');
     if (profileCrown) {
@@ -502,12 +511,14 @@ function renderInventory() {
                 const stickerSrc = m.src;
                 
                 const stickerElement = m.isLottie ? 
-                    `<lottie-player src="${stickerSrc}" background="transparent" speed="1" loop autoplay style="width: 100%; height: 100%;"></lottie-player>` :
+                    `<lottie-player src="${stickerSrc}" background="transparent" speed="1" style="width: 100%; height: 100%;"></lottie-player>` :
                     `<img src="${stickerSrc}" style="width: 100%; height: 100%; object-fit: contain;">`;
+
+                const rarity = getRarity(m.gradientClass);
 
                 item.innerHTML = `
                     <div class="inventory-sticker-container ${m.gradientClass}">
-                        <div class="item-number">#${m.serial}</div>
+                        <div class="item-number">${rarity}</div>
                         ${stickerElement}
                     </div>
                     <div class="inventory-item-name">${isKitten ? 'Kitten' : 'Vatman'} #${m.serial}</div>
@@ -594,7 +605,13 @@ function openPackModal(packId, context = 'market', mintedData = null) {
 
     const modalContent = modalEl.querySelector('.modal-content');
     modalContent.classList.remove('dragging');
-    modalContent.style.transform = ''; // Clear any inline styles to let CSS classes work
+    modalContent.style.transform = ''; 
+
+    if (mintedData) {
+        modalContent.classList.add('is-minted');
+    } else {
+        modalContent.classList.remove('is-minted');
+    }
 
     // Impact feedback first
     if (tg.HapticFeedback) {
@@ -639,16 +656,37 @@ function updateModalUI(packId, context = 'market', mintedData = null) {
     const slider = document.getElementById('lottieSlider');
     const modalDotsContainer = document.getElementById('modalDots');
 
-    // Properties mapping for background names
+    // Properties mapping for background names (15 Total)
     const backgroundNames = {
         'grad-1': 'Deep Space',
         'grad-2': 'Sunset Mist',
         'grad-3': 'Electric Cyan',
-        'grad-4': 'Crimson Night',
-        'grad-5': 'Jungle Glow',
-        'grad-6': 'Sky Dream',
-        'grad-7': 'Royal Purple',
-        'grad-rare': 'Legendary Gold'
+        'grad-4': 'Jungle Glow',
+        'grad-5': 'Sky Dream',
+        'grad-6': 'Royal Purple',
+        'grad-7': 'Sunset Flare',
+        'grad-8': 'Toxic Mint',
+        'grad-9': 'Crimson Flare',
+        'grad-10': 'Vivid Orchid',
+        'grad-11': 'Solar Flare',
+        'grad-12': 'Phantom Indigo',
+        'grad-13': 'Nordic Night',
+        'grad-14': 'Midnight Onyx', // Legendary
+        'grad-15': 'Abyssal Abyss'   // Legendary
+    };
+
+    const rarityNames = {
+        'grad-1': 'Common', 'grad-2': 'Common', 'grad-3': 'Common', 'grad-4': 'Common', 'grad-5': 'Common', 'grad-6': 'Common', 'grad-7': 'Common',
+        'grad-8': 'Rare', 'grad-9': 'Rare', 'grad-10': 'Rare', 'grad-11': 'Rare',
+        'grad-12': 'Epic', 'grad-13': 'Epic',
+        'grad-14': 'Legendary', 'grad-15': 'Legendary'
+    };
+
+    const rarityClasses = {
+        'Common': 'rarity-common',
+        'Rare': 'rarity-rare',
+        'Epic': 'rarity-epic',
+        'Legendary': 'rarity-legendary'
     };
 
     const bgOverlay = document.getElementById('modalBgOverlay');
@@ -756,8 +794,13 @@ function updateModalUI(packId, context = 'market', mintedData = null) {
     if (propertiesEl) {
         if (mintedData) {
             const m = mintedData.mintData;
+            const rarity = rarityNames[m.gradientClass] || 'Common';
             propertiesEl.style.display = 'block';
             propertiesEl.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Rarity</span>
+                    <span class="info-value ${rarityClasses[rarity]}">${rarity}</span>
+                </div>
                 <div class="info-row">
                     <span class="info-label">Background</span>
                     <span class="info-value highlight-blue">${backgroundNames[m.gradientClass] || 'Standard'}</span>
@@ -1080,11 +1123,98 @@ function initMinting() {
     const mintBtn = document.getElementById('mintBtn');
     const resultCloseBtn = document.getElementById('mintResultCloseBtn');
     
+    // Confirmation Modal Elements
+    const confirmModal = document.getElementById('mintConfirmModal');
+    const confirmStartBtn = document.getElementById('confirmMintStart');
+    const cancelMintBtn = document.getElementById('cancelMint');
+    const closeConfirmBtn = document.getElementById('closeMintConfirm');
+
     if (mintBtn) {
         mintBtn.onclick = () => {
+            tg.HapticFeedback.impactOccurred('medium');
+            if (confirmModal) {
+                populateMintShowcase();
+                startButtonStars(); // Start the stars!
+                confirmModal.style.display = 'flex';
+                setTimeout(() => confirmModal.classList.add('active'), 10);
+            }
+        };
+    }
+
+    let btnStarsInterval = null;
+    function startButtonStars() {
+        if (btnStarsInterval) clearInterval(btnStarsInterval);
+        btnStarsInterval = setInterval(() => {
+            createStarExplosion(2, true, 'btnStarsContainer');
+        }, 150);
+    }
+
+    function stopButtonStars() {
+        if (btnStarsInterval) {
+            clearInterval(btnStarsInterval);
+            btnStarsInterval = null;
+        }
+    }
+
+    function populateMintShowcase() {
+        const showcase = document.getElementById('mintShowcase');
+        if (!showcase) return;
+        showcase.innerHTML = '';
+
+        const vatmanSlides = [
+            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json',
+            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Choco.json',
+            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Pink.json',
+            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Sad.json'
+        ];
+
+        // Symmetrical positions (Top Left, Top Right, Bottom Left, Bottom Right)
+        const positions = [
+            { top: '15%', left: '10%' },
+            { top: '15%', right: '10%' },
+            { bottom: '25%', left: '10%' },
+            { bottom: '25%', right: '10%' }
+        ];
+
+        positions.forEach((pos, i) => {
+            const asset = document.createElement('div');
+            asset.className = 'floating-asset';
+            
+            // Apply position
+            Object.keys(pos).forEach(key => asset.style[key] = pos[key]);
+            
+            const src = vatmanSlides[i % vatmanSlides.length];
+            asset.innerHTML = `<lottie-player src="${src}" background="transparent" speed="1" loop autoplay></lottie-player>`;
+            
+            // Randomize animation delay for natural feel
+            asset.style.animationDelay = `${i * 0.5}s`;
+            
+            showcase.appendChild(asset);
+        });
+    }
+
+    if (confirmStartBtn) {
+        confirmStartBtn.onclick = () => {
+            if (confirmModal) {
+                confirmModal.classList.remove('active');
+                stopButtonStars(); // Stop the stars
+                setTimeout(() => confirmModal.style.display = 'none', 500);
+            }
             tg.HapticFeedback.impactOccurred('heavy');
             handleMint(currentModalPackId);
         };
+    }
+
+    if (cancelMintBtn) cancelMintBtn.onclick = () => closeConfirm();
+    if (closeConfirmBtn) closeConfirmBtn.onclick = () => closeConfirm();
+
+    function closeConfirm() {
+        if (confirmModal) {
+            confirmModal.classList.remove('active');
+            stopButtonStars(); // Stop the stars
+            setTimeout(() => confirmModal.style.display = 'none', 500);
+        }
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     if (resultCloseBtn) {
@@ -1136,7 +1266,7 @@ async function handleMint(packId) {
         const isLottie = src.endsWith('.json');
         
         item.innerHTML = isLottie ? 
-            `<lottie-player src="${src}" background="transparent" speed="2" autoplay></lottie-player>` :
+            `<lottie-player src="${src}" background="transparent" speed="1"></lottie-player>` :
             `<img src="${src}">`;
             
         swirler.appendChild(item);
@@ -1167,8 +1297,23 @@ async function handleMint(packId) {
             Math.floor(100 + Math.random() * 899).toString() :
             Math.floor(1000 + Math.random() * 8999).toString();
         
-        const isRareGrad = Math.random() < 0.05;
-        const gradClass = isRareGrad ? 'grad-rare' : `grad-${Math.floor(1 + Math.random() * 7)}`;
+        // Rarity-based Gradient Selection (15 Gradients)
+        const roll = Math.random() * 100;
+        let gradClass = 'grad-1';
+        
+        if (roll < 3) {
+            // Legendary (3%): grad-14 or grad-15
+            gradClass = Math.random() < 0.5 ? 'grad-14' : 'grad-15';
+        } else if (roll < 10) {
+            // Epic (7%): grad-12 to grad-13
+            gradClass = `grad-${Math.floor(12 + Math.random() * 2)}`;
+        } else if (roll < 30) {
+            // Rare (20%): grad-8 to grad-11
+            gradClass = `grad-${Math.floor(8 + Math.random() * 4)}`;
+        } else {
+            // Common (70%): grad-1 to grad-7
+            gradClass = `grad-${Math.floor(1 + Math.random() * 7)}`;
+        }
 
         inventory[packIndex] = {
             ...inventory[packIndex],
