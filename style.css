@@ -740,7 +740,7 @@ body.modal-active #app .bottom-nav-container {
     background: #1c1c1e;
     border-radius: 0;
     position: relative;
-    padding: 60px 20px 100px 20px; /* Increased top padding significantly */
+    padding: 150px 20px 100px 20px; /* Increased top padding significantly */
     margin-bottom: 0;
     transform: translate3d(0, 110%, 0);
     will-change: transform;
@@ -1477,13 +1477,13 @@ body.modal-active #app .bottom-nav-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    padding: 0 5px 120px 5px; /* Added bottom padding for scroll effect */
+    padding: 25px 5px 120px 5px; /* Added top padding for better spacing */
 }
 
 .inventory-item {
     background: #1c1c1e; /* Card background from photo */
     border-radius: 20px;
-    padding: 12px 8px;
+    padding: 12px 8px; /* Restored to original */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2281,15 +2281,16 @@ body.modal-active #app .bottom-nav-container {
 
 /* Update Inventory Item for Minted Items */
 .inventory-item.minted {
-    padding: 6px;
+    padding: 12px 8px; /* Exact match to standard items */
     background: #2c2c2e;
 }
 
 .inventory-item.minted .inventory-sticker-container {
     border-radius: 15px;
-    width: 100%;
-    height: 75%;
-    margin-bottom: 5px;
+    width: 90%;
+    height: 70%;
+    margin-top: 20px; /* Increased visual compensation */
+    margin-bottom: 8px;
     position: relative;
     overflow: hidden;
 }
