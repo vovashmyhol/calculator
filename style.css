@@ -106,6 +106,32 @@ body.creators-active .scroll-headroom {
     pointer-events: none;
 }
 
+.mint-preview-card {
+    width: 140px;
+    height: 200px;
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    margin-bottom: 25px;
+    z-index: 10;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth bg and scale changes */
+}
+
+.preview-sticker {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease-in-out; /* For slideshow fade */
+}
+
 /* Header Content */
 .main-header {
     display: flex;

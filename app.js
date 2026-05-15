@@ -211,6 +211,33 @@ function initCarousel() {
 
 const INVENTORY_KEY = 'voco_inventory';
 const USED_CODES_KEY = 'voco_used_codes';
+
+const allKittenStickers = [
+    'Kitten/CAACAgIAAxUAAWn8ngkaS9tMy3lKuzIr40hAyubNAAK8iQAChGexS4oMmkGTCWnzOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngl0Uic8CPFn8PaNlxJiYMvfAALhjgACFSupS0M1XTEi-JfEOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngl7r-dZimllMsYM5Df_KmpYAALLhAACsX2oS9hrui4DeKoNOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8nglKGrtEu5_12GtTsCPlsE-CAAIqgAAC4SKwS3OD04mbQpy0OwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8nglViygopzBLGP1ncUGJbqJxAAIimQACsBSpSzY51wAB1Vte7TsE.webp',
+    'Kitten/CAACAgIAAxUAAWn8nglXfpjgdGBxk9cUmN-rdVlhAAL1rQACrKSpS1G2Zy6MJRKwOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8nglzg7EjC8t-OkDraKsuOsoJAAIEhAAC3p-wS8qBNPSHzJv5OwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngm6t03GV5JHzRdbUN6fm0wRAALBngAC-A6pSxZ1haB1v15xOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngmeBwl1_yp9c9_WHlTa-XQwAAIhigAC6uqoS7oCGkyd2tf_OwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngmgIgbykSXGFyC6BK35sNeEAAJbiQACksqpSzFIjsCS_wWBOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngmqZf5AJbl1S2LGjO1HRj3KAAJxmAACbbGpS5m7ONJOa_KyOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngmwZ32WyYWJc7pXbOq49SO8AAJhkgACRDapS1J3lQ223rAVOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngnBNZgjgtUo8knekJleUs9gAAL9nwACqsmpS3jKuSTGAyHXOwQ.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngnDhAABwrWBfzC2N3SFbJEq7QACbZgAAor0qEtsXHpThj8f6zsE.webp',
+    'Kitten/CAACAgIAAxUAAWn8ngnU2O29CDm74uvXtPqCnCOaAALlgwACZBaoS_IaSnR-SYJoOwQ.webp',
+    'Kitten/CAACAgIAAxkBAAEDuTZp_J393n7Qp-lKIQxVL_rGa2RqDQACsJIAAiG5qEtR64MguW7vITsE.webp'
+];
+
+const allVocoStickers = [
+    'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json',
+    'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Choco.json',
+    'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Pink.json',
+    'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Sad.json'
+];
+
 let inventory = [];
 let usedCodes = [];
 
@@ -1171,8 +1198,17 @@ function initMinting() {
         mintBtn.onclick = () => {
             tg.HapticFeedback.impactOccurred('medium');
             if (confirmModal) {
-                populateMintShowcase();
-                startButtonStars(); // Start the stars!
+                const packName = currentModalPackId === 'Kitten' ? 'Kitten Pack' : 'Vatman family';
+                
+                // Update Modal Text
+                const title = confirmModal.querySelector('.mint-confirm-title');
+                const text = confirmModal.querySelector('.mint-confirm-text');
+                if (title) title.textContent = `Craft ${packName}`;
+                if (text) text.innerHTML = `This action will consume your <b>${packName}</b> to create <b>one unique sticker</b> with a random rarity, background, and serial number.`;
+
+                populateMintShowcase(currentModalPackId);
+                startButtonStars(); 
+                startPreviewSlideshow(currentModalPackId);
                 confirmModal.style.display = 'flex';
                 setTimeout(() => confirmModal.classList.add('active'), 10);
             }
@@ -1187,6 +1223,61 @@ function initMinting() {
         }, 150);
     }
 
+    let slideshowInterval = null;
+    function startPreviewSlideshow(packId) {
+        const stickers = packId === 'Kitten' ? allKittenStickers : allVocoStickers;
+        const card = document.querySelector('.mint-preview-card');
+        const container = card ? card.querySelector('.preview-sticker') : null;
+        const badge = card ? card.querySelector('.preview-badge') : null;
+        if (!card || !container) return;
+
+        let index = 0;
+        const rarities = ['Common #321', 'Rare #088', 'Epic #007', 'Legendary #001'];
+        
+        // Initial set (immediately)
+        const setContent = (idx) => {
+            const src = stickers[idx];
+            const isLottie = src.endsWith('.json');
+            container.innerHTML = isLottie ? 
+                `<lottie-player src="${src}" background="transparent" speed="1" loop autoplay></lottie-player>` :
+                `<img src="${src}" style="width: 100%; height: 100%; object-fit: contain;">`;
+            
+            const gradNum = Math.floor(Math.random() * 15) + 1;
+            card.className = `mint-preview-card grad-${gradNum}`;
+            if (badge) {
+                const rIdx = Math.floor(Math.random() * rarities.length);
+                const serial = Math.floor(100 + Math.random() * 899);
+                const rarityText = rarities[rIdx].split(' #')[0];
+                badge.textContent = `${rarityText} #${serial}`;
+            }
+        };
+
+        setContent(0); // Set first item immediately
+
+        if (slideshowInterval) clearInterval(slideshowInterval);
+        slideshowInterval = setInterval(() => {
+            index = (index + 1) % stickers.length;
+            
+            // Fade out
+            container.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                setContent(index);
+                // Fade in
+                container.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            }, 300);
+        }, 2000);
+    }
+
+    function stopPreviewSlideshow() {
+        if (slideshowInterval) {
+            clearInterval(slideshowInterval);
+            slideshowInterval = null;
+        }
+    }
+
     function stopButtonStars() {
         if (btnStarsInterval) {
             clearInterval(btnStarsInterval);
@@ -1194,17 +1285,12 @@ function initMinting() {
         }
     }
 
-    function populateMintShowcase() {
+    function populateMintShowcase(packId) {
         const showcase = document.getElementById('mintShowcase');
         if (!showcase) return;
         showcase.innerHTML = '';
 
-        const vatmanSlides = [
-            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json',
-            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Choco.json',
-            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Pink.json',
-            'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Sad.json'
-        ];
+        const slides = packId === 'Kitten' ? allKittenStickers : allVocoStickers;
 
         // Symmetrical positions (Top Left, Top Right, Bottom Left, Bottom Right)
         const positions = [
@@ -1221,8 +1307,11 @@ function initMinting() {
             // Apply position
             Object.keys(pos).forEach(key => asset.style[key] = pos[key]);
             
-            const src = vatmanSlides[i % vatmanSlides.length];
-            asset.innerHTML = `<lottie-player src="${src}" background="transparent" speed="1" loop autoplay></lottie-player>`;
+            const src = slides[i % slides.length];
+            const isLottie = src.endsWith('.json');
+            asset.innerHTML = isLottie ? 
+                `<lottie-player src="${src}" background="transparent" speed="1" loop autoplay></lottie-player>` :
+                `<img src="${src}" style="width: 100%; height: 100%; object-fit: contain;">`;
             
             // Randomize animation delay for natural feel
             asset.style.animationDelay = `${i * 0.5}s`;
@@ -1250,6 +1339,7 @@ function initMinting() {
         if (confirmModal) {
             confirmModal.classList.remove('active');
             stopButtonStars(); // Stop the stars
+            stopPreviewSlideshow(); // Stop the slideshow
             setTimeout(() => confirmModal.style.display = 'none', 500);
         }
         tg.HapticFeedback.impactOccurred('light');
@@ -1272,29 +1362,7 @@ async function handleMint(packId) {
     swirler.innerHTML = '';
     
     // Use the actual full slides for the pack
-    const allPackSlides = packId === 'Kitten' ? [
-        'Kitten/CAACAgIAAxUAAWn8ngkaS9tMy3lKuzIr40hAyubNAAK8iQAChGexS4oMmkGTCWnzOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngl0Uic8CPFn8PaNlxJiYMvfAALhjgACFSupS0M1XTEi-JfEOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngl7r-dZimllMsYM5Df_KmpYAALLhAACsX2oS9hrui4DeKoNOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8nglKGrtEu5_12GtTsCPlsE-CAAIqgAAC4SKwS3OD04mbQpy0OwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8nglViygopzBLGP1ncUGJbqJxAAIimQACsBSpSzY51wAB1Vte7TsE.webp',
-        'Kitten/CAACAgIAAxUAAWn8nglXfpjgdGBxk9cUmN-rdVlhAAL1rQACrKSpS1G2Zy6MJRKwOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8nglzg7EjC8t-OkDraKsuOsoJAAIEhAAC3p-wS8qBNPSHzJv5OwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngm6t03GV5JHzRdbUN6fm0wRAALBngAC-A6pSxZ1haB1v15xOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngmeBwl1_yp9c9_WHlTa-XQwAAIhigAC6uqoS7oCGkyd2tf_OwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngmgIgbykSXGFyC6BK35sNeEAAJbiQACksqpSzFIjsCS_wWBOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngmqZf5AJbl1S2LGjO1HRj3KAAJxmAACbbGpS5m7ONJOa_KyOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngmwZ32WyYWJc7pXbOq49SO8AAJhkgACRDapS1J3lQ223rAVOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngnBNZgjgtUo8knekJleUs9gAAL9nwACqsmpS3jKuSTGAyHXOwQ.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngnDhAABwrWBfzC2N3SFbJEq7QACbZgAAor0qEtsXHpThj8f6zsE.webp',
-        'Kitten/CAACAgIAAxUAAWn8ngnU2O29CDm74uvXtPqCnCOaAALlgwACZBaoS_IaSnR-SYJoOwQ.webp',
-        'Kitten/CAACAgIAAxkBAAEDuTZp_J393n7Qp-lKIQxVL_rGa2RqDQACsJIAAiG5qEtR64MguW7vITsE.webp'
-    ] : [
-        'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Vatman.json',
-        'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Choco.json',
-        'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Pink.json',
-        'https://raw.githubusercontent.com/vovashmyhol/Voco-Stickers/refs/heads/main/Sad.json'
-    ];
+    const allPackSlides = packId === 'Kitten' ? allKittenStickers : allVocoStickers;
 
     // Create swirling items using ALL stickers from the pack
     for (let i = 0; i < 20; i++) {
