@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initModalSlider();
     initCollectionsFilter(); 
     initMinting(); // New: Initialize minting listeners
+    initGiftSystem(); // New: Initialize gift code system
 
     // Initial tab setup
     window.switchTab = switchTab;
@@ -209,7 +210,9 @@ function initCarousel() {
  */
 
 const INVENTORY_KEY = 'voco_inventory';
+const USED_CODES_KEY = 'voco_used_codes';
 let inventory = [];
+let usedCodes = [];
 
 /**
  * PHASE 2: Storage, Modal, Purchase and Inventory Logic
@@ -257,11 +260,14 @@ const storage = {
 
 async function initInventory() {
     const data = await storage.get(INVENTORY_KEY);
+    const codesData = await storage.get(USED_CODES_KEY);
     try {
         inventory = data ? JSON.parse(data) : [];
+        usedCodes = codesData ? JSON.parse(codesData) : [];
         console.log('Inventory loaded:', inventory);
     } catch (e) {
         inventory = [];
+        usedCodes = [];
     }
     // Render inventory once loaded
     renderInventory();
@@ -286,14 +292,21 @@ if (kittenPack) {
 }
 
 let currentFilter = 'all';
+let isCraftedFilterActive = false; // Toggle state: false = regular packs, true = crafted items
 
 function handleFilterSelection(buttonId) {
     currentFilter = buttonId;
-    const titleSpan = document.querySelector('#collectionsSelector .selector-title');
-    if (titleSpan) {
-        if (buttonId === 'all') titleSpan.textContent = 'Collections';
-        else if (buttonId === 'VocoX') titleSpan.textContent = 'Vatman family';
-        else if (buttonId === 'Kitten') titleSpan.textContent = 'Kitten Pack';
+    const titleContainer = document.querySelector('#collectionsSelector .selector-content');
+    if (titleContainer) {
+        if (buttonId === 'all') {
+            titleContainer.innerHTML = '<span class="selector-title">Collections</span>';
+        } else if (buttonId === 'VocoX') {
+            titleContainer.innerHTML = '<span class="selector-title">Vatman family</span><img src="verify.WEBP" alt="Verified" class="opt-icon-small" style="margin-left: 4px;">';
+        } else if (buttonId === 'Kitten') {
+            titleContainer.innerHTML = '<span class="selector-title">Kitten Pack</span>';
+        } else if (buttonId === 'crafted') {
+            titleContainer.innerHTML = '<img src="Mint.webp" alt="Crafted" class="opt-icon" style="width: 20px; height: 20px; margin-right: 8px;"><span class="selector-title">Crafted</span>';
+        }
     }
     renderInventory();
 }
@@ -344,6 +357,17 @@ function initCollectionsFilter() {
             selector.classList.remove('active');
         }
     });
+
+    // Crafted Toggle Logic
+    const toggleBtn = document.getElementById('craftedToggle');
+    if (toggleBtn) {
+        toggleBtn.onclick = () => {
+            isCraftedFilterActive = !isCraftedFilterActive;
+            toggleBtn.classList.toggle('active', isCraftedFilterActive);
+            tg.HapticFeedback.impactOccurred('medium');
+            renderInventory();
+        };
+    }
 }
 
 function openProfile() {
@@ -457,19 +481,29 @@ function renderInventory() {
         }
     }
 
-    // Filter inventory based on selection
-    let displayInventory = inventory;
-    if (currentFilter !== 'all') {
-        displayInventory = inventory.filter(item => {
-            const id = typeof item === 'string' ? item : item.id;
-            return id === currentFilter;
-        });
-    }
+    // Filter inventory based on selection and toggle state
+    let displayInventory = inventory.filter(item => {
+        // 1. Collection Filter
+        const packId = typeof item === 'string' ? item : item.id;
+        if (currentFilter !== 'all' && packId !== currentFilter) return false;
+
+        // 2. Crafted Toggle Filter
+        const isMinted = item.mintData ? true : false;
+        return isMinted === isCraftedFilterActive;
+    });
 
     if (displayInventory.length === 0) {
         // Render Empty State
         const emptyState = document.createElement('div');
         emptyState.className = 'inventory-empty-state';
+        
+        let emptyMsg = "";
+        if (isCraftedFilterActive) {
+            emptyMsg = currentFilter === 'all' ? "You don't have any crafted items yet" : `No crafted items in ${document.querySelector('#collectionsSelector .selector-title').textContent}`;
+        } else {
+            emptyMsg = currentFilter === 'all' ? "You don't have any packs yet" : `No packs in ${document.querySelector('#collectionsSelector .selector-title').textContent}`;
+        }
+
         emptyState.innerHTML = `
             <div class="empty-lottie-container">
                 <lottie-player 
@@ -481,7 +515,7 @@ function renderInventory() {
                 </lottie-player>
             </div>
             <p class="empty-text">
-                ${currentFilter === 'all' ? "You don't have any packs yet" : "No packs in this collection"}
+                ${emptyMsg}
             </p>
             <button class="go-market-btn" id="goMarketBtn">Go to market</button>
         `;
@@ -744,9 +778,13 @@ function updateModalUI(packId, context = 'market', mintedData = null) {
     if (priceValue) priceValue.textContent = price;
     if (supplyValue) supplyValue.textContent = supply;
     
-    // Set Title
+    // Set Title & Author
     if (mintedData) {
-        if (packTitle) packTitle.textContent = `${title} #${mintedData.mintData.serial}`;
+        if (packTitle) {
+            const author = packId === 'Kitten' ? '@vovnx' : '@voco_in';
+            const authorLink = packId === 'Kitten' ? 'https://t.me/vovnx' : 'https://t.me/voco_in';
+            packTitle.innerHTML = `${title} #${mintedData.mintData.serial}<div class="pack-author-sub">by <a href="${authorLink}" target="_blank"><span>${author}</span></a></div>`;
+        }
     } else {
         if (packTitle) packTitle.textContent = title;
     }
@@ -1348,6 +1386,77 @@ function showMintResult(data) {
 
     resultModal.style.display = 'flex';
     tg.HapticFeedback.notificationOccurred('success');
+}
+
+/**
+ * Gift Code System Logic
+ */
+function initGiftSystem() {
+    const openBtn = document.getElementById('openGiftCode');
+    const closeBtn = document.getElementById('closeGiftModal');
+    const redeemBtn = document.getElementById('redeemBtn');
+    const modal = document.getElementById('giftModal');
+    const input = document.getElementById('giftInput');
+
+    if (!openBtn || !modal) return;
+
+    const validCodes = ['44411', '88833', '87823', '11177', '74777', '33222', '59999'];
+
+    openBtn.onclick = () => {
+        modal.classList.add('active');
+        document.body.classList.add('modal-active');
+        input.value = '';
+        input.focus();
+        tg.HapticFeedback.impactOccurred('light');
+    };
+
+    const closeGiftModal = () => {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-active');
+    };
+
+    closeBtn.onclick = closeGiftModal;
+
+    redeemBtn.onclick = async () => {
+        const code = input.value.trim();
+        
+        if (!code) {
+            tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+
+        if (usedCodes.includes(code)) {
+            alert('This code has already been used.');
+            tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+
+        if (validCodes.includes(code)) {
+            // Success!
+            usedCodes.push(code);
+            await storage.set(USED_CODES_KEY, JSON.stringify(usedCodes));
+            
+            // Grant Kitten Pack
+            const instanceId = `Kitten_Gift_${Date.now()}`;
+            inventory.push({
+                id: 'Kitten',
+                instanceId: instanceId,
+                purchasedAt: new Date().toISOString(),
+                isGift: true
+            });
+            await storage.set(INVENTORY_KEY, JSON.stringify(inventory));
+
+            tg.HapticFeedback.notificationOccurred('success');
+            closeGiftModal();
+            
+            // Trigger purchase success effect
+            showSuccessModal('Kitten');
+            renderInventory();
+        } else {
+            alert('Invalid gift code.');
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+    };
 }
 
 

@@ -968,6 +968,22 @@ body.modal-active #app .bottom-nav-container {
     align-self: stretch; /* Fill full width */
 }
 
+.pack-author-sub {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+    margin-top: 6px;
+}
+
+.pack-author-sub a {
+    text-decoration: none;
+}
+
+.pack-author-sub span {
+    color: #40B3FF;
+    font-weight: 600;
+}
+
 /* Info Card Style - Exactly like photo */
 .info-card {
     width: 100%;
@@ -1388,6 +1404,7 @@ body.modal-active #app .bottom-nav-container {
 }
 
 .profile-collections-selector {
+    flex: 1; /* Take remaining space */
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -1401,6 +1418,44 @@ body.modal-active #app .bottom-nav-container {
     transition: all 0.2s ease;
     position: relative;
     z-index: 9999;
+}
+
+.crafted-toggle-btn {
+    width: 58px;
+    height: 58px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.crafted-toggle-btn img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.crafted-toggle-btn.active {
+    background: rgba(48, 130, 246, 0.2);
+    border-color: rgba(48, 130, 246, 0.4);
+    box-shadow: 0 0 20px rgba(48, 130, 246, 0.2);
+}
+
+.crafted-toggle-btn.active img {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+.crafted-toggle-btn:active {
+    transform: scale(0.92);
 }
 
 .profile-collections-selector:active {
@@ -1943,6 +1998,9 @@ body.modal-active #app .bottom-nav-container {
     margin: 0 0 25px 0;
     width: 100%;
     position: relative; /* Context for the floating menu */
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .profile-collections-selector {
@@ -2032,6 +2090,23 @@ body.modal-active #app .bottom-nav-container {
 .filter-opt.active {
     color: #40B3FF;
     background: rgba(64, 179, 255, 0.1);
+}
+
+.opt-left {
+    display: flex;
+    align-items: center;
+}
+
+.opt-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.opt-icon-small {
+    width: 22px; /* Increased from 18px */
+    height: 22px;
+    object-fit: contain;
 }
 
 .opt-radio {
@@ -2293,16 +2368,16 @@ body.modal-active #app .bottom-nav-container {
 
 /* Update Inventory Item for Minted Items */
 .inventory-item.minted {
-    padding: 12px 8px; /* Exact match to standard items */
+    padding: 6px 4px; /* Further reduced padding to maximize space for crafted content */
     background: #2c2c2e;
 }
 
 .inventory-item.minted .inventory-sticker-container {
-    border-radius: 15px;
-    width: 96%; /* Increased from 90% */
-    height: 76%; /* Increased from 70% */
-    margin-top: 10px; /* Reduced from 20px to shift upwards */
-    margin-bottom: 8px;
+    border-radius: 14px;
+    width: 100%; /* Full width of available space */
+    height: 82%; /* Significantly taller */
+    margin-top: 4px; /* Very close to the top */
+    margin-bottom: 6px;
     position: relative;
     overflow: hidden;
 }
@@ -2532,6 +2607,77 @@ body.modal-active #app .bottom-nav-container {
     font-size: 0.9rem;
     font-weight: 600;
     padding: 10px;
+}
+
+/* Gift Code Styles */
+.gift-code-trigger-wrap {
+    width: 100%;
+    padding: 40px 0 100px 0;
+    display: flex;
+    justify-content: center;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+.gift-code-trigger-wrap:hover {
+    opacity: 0.6;
+}
+
+.gift-code-link {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.gift-modal-content {
+    height: auto !important;
+    min-height: 400px;
+    padding-top: 60px !important;
+    border-radius: 40px 40px 0 0 !important;
+}
+
+.gift-modal-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.gift-modal-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 30px;
+}
+
+.gift-input-wrap {
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 30px;
+}
+
+.gift-input-wrap input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 18px;
+    color: white;
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 5px;
+    font-family: 'Orbitron', sans-serif;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.gift-input-wrap input:focus {
+    border-color: #3082F6;
+}
+
+#redeemBtn {
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 15px;
 }
 
 

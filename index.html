@@ -154,6 +154,9 @@
                     </div>
                 </div>
                 <div class="profile-collections-wrapper">
+                    <button class="crafted-toggle-btn" id="craftedToggle">
+                        <img src="Mint.webp" alt="Mint">
+                    </button>
                     <div class="profile-collections-selector" id="collectionsSelector">
                         <div class="selector-content">
                             <span class="selector-title">Collections</span>
@@ -169,7 +172,10 @@
                                 <div class="opt-radio"></div>
                             </button>
                             <button class="filter-opt" data-filter="VocoX">
-                                <span>Vatman family</span>
+                                <div class="opt-left">
+                                    <span>Vatman family</span>
+                                    <img src="verify.WEBP" alt="Verified" class="opt-icon-small" style="margin-left: 4px;">
+                                </div>
                                 <div class="opt-radio"></div>
                             </button>
                             <button class="filter-opt" data-filter="Kitten">
@@ -182,6 +188,11 @@
 
                 <div class="inventory-grid" id="inventoryGrid">
                     <!-- Stickers will be injected here -->
+                </div>
+
+                <!-- Gift Code Trigger (Now inside Profile) -->
+                <div class="gift-code-trigger-wrap">
+                    <span id="openGiftCode" class="gift-code-link">Enter a gift code</span>
                 </div>
             </div>
         </div>
@@ -382,6 +393,22 @@
             <h2 class="result-title">New Item Created!</h2>
             <p class="result-subtitle">This sticker is now unique and belongs to you.</p>
             <button class="result-close-btn" id="mintResultCloseBtn">Awesome!</button>
+        </div>
+    </div>
+
+    <!-- Gift Code Modal -->
+    <div id="giftModal" class="modal-overlay">
+        <div class="modal-content gift-modal-content">
+            <div class="modal-handle"></div>
+            <h2 class="gift-modal-title">Redeem Gift</h2>
+            <p class="gift-modal-subtitle">Enter your secret code below</p>
+            
+            <div class="gift-input-wrap">
+                <input type="number" id="giftInput" placeholder="00000" pattern="\d*">
+            </div>
+
+            <button class="premium-action-button" id="redeemBtn">Redeem</button>
+            <button class="secondary-btn" id="closeGiftModal">Cancel</button>
         </div>
     </div>
 
