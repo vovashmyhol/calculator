@@ -740,7 +740,7 @@ body.modal-active #app .bottom-nav-container {
     background: #1c1c1e;
     border-radius: 0;
     position: relative;
-    padding: 150px 20px 100px 20px; /* Increased top padding significantly */
+    padding: 100px 20px 100px 20px; /* Increased top padding significantly */
     margin-bottom: 0;
     transform: translate3d(0, 110%, 0);
     will-change: transform;
