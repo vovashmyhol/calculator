@@ -1177,13 +1177,13 @@ body.modal-active #app .bottom-nav-container {
     position: relative;
     z-index: 2;
     flex: 1;
-    padding: 150px 20px 100px 20px; /* Matched to Market Modal */
+    padding: 150px 16px 100px 16px; 
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Prevent horizontal scrolling from children */
 }
 
 .profile-main-info {
@@ -1439,6 +1439,11 @@ body.modal-active #app .bottom-nav-container {
     font-weight: 700;
     margin-bottom: 8px;
     color: white;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 10px;
 }
 
 
@@ -1476,22 +1481,27 @@ body.modal-active #app .bottom-nav-container {
 .inventory-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 25px 5px 120px 5px; /* Added top padding for better spacing */
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* Prevent content from expanding column width */
+    gap: 8px;
+    padding: 20px 0 120px 0; 
+    justify-items: center;
+    align-items: start;
 }
 
 .inventory-item {
-    background: #1c1c1e; /* Card background from photo */
-    border-radius: 20px;
-    padding: 12px 8px; /* Restored to original */
+    background: #1c1c1e;
+    border-radius: 18px; /* Slightly smoother for small cards */
+    padding: 10px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%; /* Ensure it fills the grid column */
     aspect-ratio: 1 / 1.45;
     transition: transform 0.2s;
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
 }
 
 .inventory-item:active {
@@ -1499,12 +1509,12 @@ body.modal-active #app .bottom-nav-container {
 }
 
 .inventory-sticker-container {
-    width: 90%;
+    width: 100%;
     height: 70%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     pointer-events: none;
 }
 
@@ -1512,20 +1522,20 @@ body.modal-active #app .bottom-nav-container {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 800;
     color: white;
     margin-bottom: 4px;
 }
 
 .inventory-item-price img {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 
 .inventory-item-name {
-    font-size: 0.75rem;
-    color: white;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 600;
     text-transform: none;
     letter-spacing: normal;
@@ -1537,6 +1547,7 @@ body.modal-active #app .bottom-nav-container {
     text-overflow: ellipsis;
     font-family: var(--font-main); 
     pointer-events: none;
+    padding: 0 4px;
 }
 
 /* Empty State Styling */
@@ -2288,9 +2299,9 @@ body.modal-active #app .bottom-nav-container {
 
 .inventory-item.minted .inventory-sticker-container {
     border-radius: 15px;
-    width: 90%;
-    height: 70%;
-    margin-top: 20px; /* Increased visual compensation */
+    width: 96%; /* Increased from 90% */
+    height: 76%; /* Increased from 70% */
+    margin-top: 10px; /* Reduced from 20px to shift upwards */
     margin-bottom: 8px;
     position: relative;
     overflow: hidden;
